@@ -17,14 +17,23 @@ let input = puzzleInput;
 
 function giveIncreases(input) {
     let increasesCounter = 0;
-    let previous = input[0];
+    let previous = input[0]+input[1]+input[2];
+
     for (let i = 1; i <= input.length; i++) {
-        if (input[i] > previous) {
-            increasesCounter++
+        
+        if (input[i] && input[i+1] && input[i+2]) {
+            let sum = input[i] + input[i+1] + input[i+2];
+            if (sum > previous) {
+                increasesCounter++
+            }
+            previous = sum;
         }
-        previous = input[i];
+        
+
     }
-    console.log(increasesCounter);
+
+
+    console.log('increases: '+increasesCounter);
 }
 
 giveIncreases(input);
