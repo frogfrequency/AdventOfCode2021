@@ -28,11 +28,7 @@ function giveIncreases(input) {
             }
             previous = sum;
         }
-        
-
     }
-
-
     console.log('increases: '+increasesCounter);
 }
 
