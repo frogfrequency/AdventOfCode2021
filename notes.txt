@@ -1,3 +1,0 @@
-### compile file manually
-
-navigate to location and : tsc myFile.tsc
