@@ -43,7 +43,6 @@ function giveValidAdjacents(cave, alreadyVisited, routeSoFar) {
 }
 
 function startsWithUpperCase(cave) {
-    9
     return cave.charAt(0) === cave.charAt(0).toUpperCase();
 }
 
