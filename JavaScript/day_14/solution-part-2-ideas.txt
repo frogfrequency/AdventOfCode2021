@@ -1,0 +1,10 @@
+unfortunately the algorithm from part 1 can not solve part 2 due to performance (would probably take hundreds of years to compute)
+
+update: tried a linked list approach.. it performs better (reaches roughly ~21 rounds instead of only ~14) but still lightyears away from 
+target of 40 rounds
+
+--> solution is probably to find some abstract patterns in the growing of the polymer template
+--> maybe the initial template can be found in later stages of the loop??
+
+--> maybe you can do much more with the insertionrules alone.... do some "abstraction-magic" with the insertionrules first and 
+then tackle the initial template in a second step???
