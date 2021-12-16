@@ -1,7 +1,10 @@
 // INPUT
 
-const testInput: string =
-    `1163751742
+import { helloOtherFile } from "./data/puzzle-input.js"
+
+console.log(helloOtherFile);
+
+const testInput: string = `1163751742
 1381373672
 2136511328
 3694931569
@@ -10,7 +13,11 @@ const testInput: string =
 1359912421
 3125421639
 1293138521
-2311944581`
+2311944581
+`
+
+
+console.log(testInput);
 
 const input: string = testInput; // change input here
 
@@ -54,7 +61,7 @@ function giveAdjacents(coords: number[]): number[][] {
 }
 
 function performRound(): void {
-    let newActive: string[] = [];
+    let nextActive: string[] = [...activeCoords];
 
     // decrease all active coords by one  
     activeCoords.forEach(element => {
@@ -62,13 +69,19 @@ function performRound(): void {
         map[elementArr[0]][elementArr[1]]--
         let newValue: number = map[elementArr[0]][elementArr[1]];
         if (newValue === 0) {
-            let newAdjacents:number[][] = giveAdjacents(elementArr);
+            // remove current element form nextActive
+            nextActive.filter(activeElement => activeElement !== element )
+            // find adjacents, validate and push to nextActive and visited
+            let newAdjacentsNum:number[][] = giveAdjacents(elementArr);
             let newAdjacentsStr: string[] = [];
-            newAdjacents.forEach( element => {
+            newAdjacentsNum.forEach( element => {
                 newAdjacentsStr.push(toString(element))
-                console.log(`newActive: ${newAdjacentsStr}`)
             })
+            newAdjacentsStr = newAdjacentsStr.filter(element => !visitedCoords.includes(element))
+            nextActive = nextActive.concat(newAdjacentsStr);
+            visitedCoords = visitedCoords.concat(newAdjacentsStr);
         }
+        activeCoords = nextActive;
     })
     // all that reach 0 -->
 
@@ -88,6 +101,7 @@ function logMap(): void {
     map.forEach(element => {
         console.log(element.join().replace(/,/g, ''));
     })
+    console.log('---------------')
 }
 
 function toArr(string: string): number[] {
@@ -111,9 +125,10 @@ function toString(coordArr: number[]): string {
 
 // logMap();
 
-performRound();
+// performRound();
 // logMap();
-
+// performRound();
+// logMap();
 
 
 // TESTING

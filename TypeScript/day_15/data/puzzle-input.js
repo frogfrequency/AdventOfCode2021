@@ -1,0 +1,1 @@
+export const helloOtherFile = 'hellooo from other file';
