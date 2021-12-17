@@ -17,7 +17,7 @@ const input = puzzle_input_js_1.puzzleInput; // change input here
 const map = [];
 let activeCoords = [];
 activeCoords.push('0,0'); // pushing the starting top left corner to the array
-let visitedCoords = ['0,0'];
+// let visitedCoords: string[] = ['0,0'];
 // PREPROCESSING / CREATING MAP ARRAY
 const stringLines = input.split('\n');
 stringLines.forEach(element => {
@@ -28,25 +28,47 @@ stringLines.forEach(element => {
     });
     map.push(intLine);
 });
+function increaseThreatLeveL(num) {
+    if (num === 9) {
+        return 1;
+    }
+    else {
+        return num + 1;
+    }
+}
+let mapSize = map.length;
+let lineSize = map[0].length;
+for (let i = 0; i < mapSize * 4; i++) { // add 4 tiles below
+    let newArrBelow = [];
+    map[i].forEach(element => {
+        newArrBelow.push(increaseThreatLeveL(element));
+    });
+    map.push(newArrBelow);
+}
+for (let y = 0; y < mapSize * 5; y++) { // addding 40 nums to each line (y<mapSize*5) because of course we have 50 lines in total
+    for (let x = 0; x < lineSize * 4; x++) {
+        map[y].push(increaseThreatLeveL(map[y][x]));
+    }
+}
 map[0][0] = 1; // making the top left position one so its threat level is always one (which is subtracted at the end before logging i)
 // END OF PREPROCESSING
 function giveAdjacents(coords) {
     let adjacentsCoordsArr = [];
     let y = coords[0];
     let x = coords[1];
-    if (y != 0) {
+    if (y != 0 && map[y - 1][x] > 0) {
         adjacentsCoordsArr.push([y - 1, x]);
     }
     ; // if statments prevent code to try and access non-existent arrays or idxs like arr[-1]
-    if (x != map[0].length - 1) {
+    if (x != map[0].length - 1 && map[y][x + 1] > 0) {
         adjacentsCoordsArr.push([y, x + 1]);
     }
     ;
-    if (y != map.length - 1) {
+    if (y != map.length - 1 && map[y + 1][x] > 0) {
         adjacentsCoordsArr.push([y + 1, x]);
     }
     ;
-    if (x != 0) {
+    if (x != 0 && map[y][x - 1] > 0) {
         adjacentsCoordsArr.push([y, x - 1]);
     }
     ;
@@ -68,16 +90,13 @@ function performRound() {
             newAdjacentsNum.forEach(element => {
                 newAdjacentsStr.push(toString(element));
             });
-            newAdjacentsStr = newAdjacentsStr.filter(element => !visitedCoords.includes(element));
+            // newAdjacentsStr = newAdjacentsStr.filter(element => !visitedCoords.includes(element))
             nextActive = nextActive.concat(newAdjacentsStr);
-            visitedCoords = visitedCoords.concat(newAdjacentsStr);
+            // visitedCoords = visitedCoords.concat(newAdjacentsStr);
         }
+        nextActive = Array.from(new Set(nextActive));
         activeCoords = nextActive;
     });
-    // all that reach 0 -->
-    // add valid neighbours to the active array and visited
-    // valid neighbours = neighbours that are not in visited
-    // delete themself from active
 }
 // UTIL
 function logMap() {
@@ -97,39 +116,18 @@ function toString(coordArr) {
     return coordArr[0] + ',' + coordArr[1];
 }
 // EXEC
-logMap();
 let lastLetter = map[map.length - 1][map[0].length - 1];
+// logMap();
 let i = 0;
 while (lastLetter != 0) {
     performRound();
-    // logMap();
     i++;
     lastLetter = map[map.length - 1][map[0].length - 1];
-    console.log(i - 1);
+    console.log(i);
+    // logMap();
 }
-logMap();
+console.log(i - 1);
 // TESTING
-// let testArray: number[] = [1, 5];
-// let testString: string = toString(testArray);
-// console.log(testArray);
-// console.log(testString);
-// console.log('-------')
-// let newTestArray: number[] = toArr(testString);
-// let newTestString: string = toString(newTestArray);
-// console.log(newTestArray);
-// console.log(newTestString);
-// console.log('-------')
-// let testArr1: string[]= [
-//     '1,13',
-//     '45, 23',
-//     '5,5',
-// ]
-// let testArr2: string[]= [
-//     '4,6',
-//     '6,6',
-//     '10,10',
-//     '10,0'
-// ]
-// let mergedArr: string[] = testArr1.concat(testArr2);
-// console.log(mergedArr)
-//# sourceMappingURL=solution-part-1.js.map
+// let testArr: string[] = ['444', '111', '222', '333', '222','222','111','444']
+// let charSet: string[] = Array.from(new Set(testArr)); // creating array with unique chars here (using set)
+//# sourceMappingURL=solution-part-2-better-performance.js.map

@@ -28,6 +28,28 @@ stringLines.forEach(element => {
     });
     map.push(intLine);
 });
+function increaseThreatLeveL(num) {
+    if (num === 9) {
+        return 1;
+    }
+    else {
+        return num + 1;
+    }
+}
+let mapSize = map.length;
+let lineSize = map[0].length;
+for (let i = 0; i < mapSize * 4; i++) { // add 4 tiles below
+    let newArrBelow = [];
+    map[i].forEach(element => {
+        newArrBelow.push(increaseThreatLeveL(element));
+    });
+    map.push(newArrBelow);
+}
+for (let y = 0; y < mapSize * 5; y++) { // addding 40 nums to each line (y<mapSize*5) because of course we have 50 lines in total
+    for (let x = 0; x < lineSize * 4; x++) {
+        map[y].push(increaseThreatLeveL(map[y][x]));
+    }
+}
 map[0][0] = 1; // making the top left position one so its threat level is always one (which is subtracted at the end before logging i)
 // END OF PREPROCESSING
 function giveAdjacents(coords) {
@@ -97,7 +119,7 @@ function toString(coordArr) {
     return coordArr[0] + ',' + coordArr[1];
 }
 // EXEC
-logMap();
+// logMap();
 let lastLetter = map[map.length - 1][map[0].length - 1];
 let i = 0;
 while (lastLetter != 0) {
@@ -105,31 +127,9 @@ while (lastLetter != 0) {
     // logMap();
     i++;
     lastLetter = map[map.length - 1][map[0].length - 1];
-    console.log(i - 1);
+    console.log(i);
 }
-logMap();
+console.log(i - 1);
+// logMap();
 // TESTING
-// let testArray: number[] = [1, 5];
-// let testString: string = toString(testArray);
-// console.log(testArray);
-// console.log(testString);
-// console.log('-------')
-// let newTestArray: number[] = toArr(testString);
-// let newTestString: string = toString(newTestArray);
-// console.log(newTestArray);
-// console.log(newTestString);
-// console.log('-------')
-// let testArr1: string[]= [
-//     '1,13',
-//     '45, 23',
-//     '5,5',
-// ]
-// let testArr2: string[]= [
-//     '4,6',
-//     '6,6',
-//     '10,10',
-//     '10,0'
-// ]
-// let mergedArr: string[] = testArr1.concat(testArr2);
-// console.log(mergedArr)
-//# sourceMappingURL=solution-part-1.js.map
+//# sourceMappingURL=solution-part-2.js.map
