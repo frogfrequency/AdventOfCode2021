@@ -81,3 +81,14 @@ note: the debugging was very complicated so all info in this paragraph may or ma
 
 check if you have cd'd to the dir where .ts and tsconfig.json are located! maybe there are other ways around but this might help!  
 ...and remember ALWAYS RUN tsc COMMAND FIRST!!
+
+
+
+
+#### weird error: Cannot redeclare block-scoped variable 'testInput1'.
+
+occured (not everytime...) when the same variable was declared a second time but in another file in the same 'project'  
+----> often we use same variables in both solutions for part 1 and 2...  
+https://stackoverflow.com/questions/35758584/cannot-redeclare-block-scoped-variable-typescript  
+check Neville Omangi's answer  
+----> fix: add the following at the beginning of one or both of the files:  export {};  
