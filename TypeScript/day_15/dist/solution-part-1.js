@@ -1,8 +1,6 @@
 "use strict";
 // INPUT
 Object.defineProperty(exports, "__esModule", { value: true });
-const puzzle_input_js_1 = require("./data/puzzle-input.js");
-console.log(puzzle_input_js_1.helloOtherFile);
 const testInput = `1163751742
 1381373672
 2136511328
@@ -12,10 +10,8 @@ const testInput = `1163751742
 1359912421
 3125421639
 1293138521
-2311944581`;
-
-
-console.log(testInput);
+2311944581
+`;
 const input = testInput; // change input here
 // GLOBAL VARIABLES
 const map = [];
@@ -64,7 +60,7 @@ function performRound() {
         let newValue = map[elementArr[0]][elementArr[1]];
         if (newValue === 0) {
             // remove current element form nextActive
-            nextActive.filter(activeElement => activeElement !== element);
+            nextActive = nextActive.filter(activeElement => activeElement !== element);
             // find adjacents, validate and push to nextActive and visited
             let newAdjacentsNum = giveAdjacents(elementArr);
             let newAdjacentsStr = [];
@@ -100,11 +96,13 @@ function toString(coordArr) {
     return coordArr[0] + ',' + coordArr[1];
 }
 // EXEC
-// logMap();
-// performRound();
-// logMap();
-// performRound();
-// logMap();
+logMap();
+let mapLength = map.length;
+for (let i = 0; i < 23; i++) { // 22 works .. 23 not ... maybe give adjacents bugged?
+    performRound();
+    logMap();
+    mapLength = map.length;
+}
 // TESTING
 // let testArray: number[] = [1, 5];
 // let testString: string = toString(testArray);

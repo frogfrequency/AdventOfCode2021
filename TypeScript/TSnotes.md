@@ -71,8 +71,13 @@ you dont want this in every day of the aoc folders :( )
 ----> after installing ts-node locally with npm i ts-node ('--save-dev' adding this is  optional)
 to get rid of the new error:  
 cannot find module 'typescript'  
-a simple npm link typescript dis solved this issue  
+'npm link typescript' this solved this issue  
 ---------> maaaaayybe the previous error could also have been resolved by something like npm link ts-node... maybe gonna try it again some day
 
   
 note: the debugging was very complicated so all info in this paragraph may or may not be correct^^
+
+#### compiling (either tsc command or Run and Debug) doesnt work
+
+check if you have cd'd to the dir where .ts and tsconfig.json are located! maybe there are other ways around but this might help!  
+...and remember ALWAYS RUN tsc COMMAND FIRST!!

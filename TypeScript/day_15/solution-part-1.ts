@@ -1,10 +1,9 @@
 // INPUT
 
-import { helloOtherFile } from "./data/puzzle-input.js"
+import { puzzleInput } from "./data/puzzle-input.js"
 
-console.log(helloOtherFile);
-
-const testInput: string = `1163751742
+const testInput: string = 
+`1163751742
 1381373672
 2136511328
 3694931569
@@ -13,13 +12,9 @@ const testInput: string = `1163751742
 1359912421
 3125421639
 1293138521
-2311944581
-`
+2311944581`
 
-
-console.log(testInput);
-
-const input: string = testInput; // change input here
+const input: string = puzzleInput; // change input here
 
 // GLOBAL VARIABLES
 
@@ -42,6 +37,7 @@ stringLines.forEach(element => {
     })
     map.push(intLine);
 })
+map[0][0] = 1; // making the top left position one so its threat level is always one (which is subtracted at the end before logging i)
 
 
 // END OF PREPROCESSING
@@ -70,7 +66,7 @@ function performRound(): void {
         let newValue: number = map[elementArr[0]][elementArr[1]];
         if (newValue === 0) {
             // remove current element form nextActive
-            nextActive.filter(activeElement => activeElement !== element )
+            nextActive = nextActive.filter(activeElement => activeElement !== element )
             // find adjacents, validate and push to nextActive and visited
             let newAdjacentsNum:number[][] = giveAdjacents(elementArr);
             let newAdjacentsStr: string[] = [];
@@ -118,21 +114,26 @@ function toString(coordArr: number[]): string {
 
 
 
-
-
-
 // EXEC
 
-// logMap();
+logMap();
+let lastLetter: number = map[map.length-1][map[0].length-1]
 
-// performRound();
-// logMap();
-// performRound();
-// logMap();
+let i: number = 0;
+while (lastLetter != 0) {
+    performRound();
+    // logMap();
+    i++;
+    lastLetter = map[map.length-1][map[0].length-1];
+    console.log(i-1);
+}
+
+logMap();
+
+
 
 
 // TESTING
-
 
 
 
