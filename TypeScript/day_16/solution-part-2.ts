@@ -50,24 +50,32 @@ function parseBin(char: string): string {
     return output
 }
 
-console.log(binaryTransmission)
+// console.log(binaryTransmission)
 
 // END OF PREPROCESSING
 
+// TYPES
 
 
-function parseIt(transmission: string): number {
+type Response = {
+    value: number
+    stringLength: number
+}
 
+
+function parseIt(transmission: string): Response {
+    let response: Response = { value: 0, stringLength: 0 }
     const packetVersion: string = transmission.slice(0, 3);
-    versionCounter += parseInt(packetVersion, 2);
-    // maybe sum all packet Versions globally and not return them???
     const typeId: string = transmission.slice(3, 6);
-    console.log(`parseIt receives: ${transmission}, with version: ${parseInt(packetVersion, 2)}`)
     const body = transmission.slice(6, transmission.length);
+    let subValues: number[] = [];
+
+    versionCounter += parseInt(packetVersion, 2);
+    console.log(`parseIt receives: ----too long^^-----, with version: ${parseInt(packetVersion, 2)}`)
 
 
     if (typeId === '100') { // LITERALVALUE
-        console.log(`\tliteralvalue found here with body: ${body}`)
+        // console.log(`\tliteralvalue found here with body: ${body}`)
         let literalValueOutput: number[] = processLiteralValue(body);
         let literalValueDec: number = literalValueOutput[0];
         let literalValueLength: number = literalValueOutput[1];
@@ -77,69 +85,83 @@ function parseIt(transmission: string): number {
         //     parseIt(newBody);
         // }
         // maybe we dont need to do this above because we should process the rest of the body in the function one level above
-        return literalValueLength+6; // because there must've been a version- and type- id --> 6 digits 
-
+        // return literalValueLength+6; // because there must've been a version- and type- id --> 6 digits 
+        response.stringLength = literalValueLength+6;
+        response.value = literalValueDec;
         // you need to check if the rest of the body contains other packets because this is possible
+        return response
     } else {
         let lengthTypeId = transmission.charAt(6);
         if (lengthTypeId === '0') { // OPERATOR -> BITLENGTH
             let numberOfBits: number = parseInt(body.slice(1, 16), 2);
             console.log(`\tlengthTypeId = ${lengthTypeId} ---> use next ${numberOfBits} bits`)
-            
-            
+
             let nextTransmissionPart: string = body.slice(16, numberOfBits + 16); // changed body.length to 16+numberOfBits
-            console.log(`\tnextTransmissionPart: ${nextTransmissionPart}`)
-            
+            // console.log(`\tnextTransmissionPart: ${nextTransmissionPart}`)
+
             let packageLength: number;
 
             while (0 < nextTransmissionPart.length) {
-                let lengthOfSubPacket: number = parseIt(nextTransmissionPart); // calling recursive function againg with new transPart
-                nextTransmissionPart = nextTransmissionPart.slice(lengthOfSubPacket, nextTransmissionPart.length);
+                let packetResponse: Response = parseIt(nextTransmissionPart); // calling recursive function againg with new transPart
+                subValues.push(packetResponse.value);
+                nextTransmissionPart = nextTransmissionPart.slice(packetResponse.stringLength, nextTransmissionPart.length);
             }
-            return numberOfBits + 22 // because of 3 + 3 + 1 + 15 ?????
-            // this function must return its value so we know if there is a rest to process.. ?
-
-            // you need to check if the rest of the body contains other packets because this is possible 
+            // return numberOfBits + 22 // because of 3 + 3 + 1 + 15 ?????
+            response.stringLength = numberOfBits + 22;
         } else if (lengthTypeId === '1') { // OPERATOR - AMOUNT OF SUBPACKETS
             let unknownLength: number = 0;
             let numberOfPackets: number = parseInt(body.slice(1, 12), 2)
             console.log(`\tlengthTypeId = ${lengthTypeId} ---> use next ${numberOfPackets} PACKETS`)
             let nextTransmissionPart: string = body.slice(12, body.length); // 12 because 1 + 11 (first 6 have been sliced before)
-            console.log(`\tnextTransmissionPart: ${nextTransmissionPart}`)
-            
-            for  (let i=0; i<numberOfPackets; i++) {
-                let lengthOfSubPacket: number = parseIt(nextTransmissionPart); // calling recursive function againg with new transPart
-                unknownLength += lengthOfSubPacket;
-                nextTransmissionPart = nextTransmissionPart.slice(lengthOfSubPacket, nextTransmissionPart.length);
+            // console.log(`\tnextTransmissionPart: ${nextTransmissionPart}`)
+
+            for (let i = 0; i < numberOfPackets; i++) {
+                let packetResponse: Response = parseIt(nextTransmissionPart); // calling recursive function againg with new transPart
+                subValues.push(packetResponse.value);
+                unknownLength += packetResponse.stringLength;
+                nextTransmissionPart = nextTransmissionPart.slice(packetResponse.stringLength, nextTransmissionPart.length);
             }
-            return unknownLength + 18// 
+            // return unknownLength + 18
+            response.stringLength = unknownLength + 18
         } else {
             console.log(`ERROR: no valid transmission part passed!!! faulty input: ${transmission} returning it's length: (${transmission.length})`)
-            return transmission.length // returnin this so it can be subtracted in the previous function and eventuell while loops terminate
+            // return transmission.length // returnin this so it can be subtracted in the previous function and eventuell while loops terminate
+            response.stringLength = transmission.length; 
         }
     }
-    // call function again with the rest if any????
-
-    // return the length of 'this' because others might need to know
-    return 0
+    
+    response.value = calculateValue(typeId, subValues);
+    console.log(response.value)
+    return response
 }
 
-
-
-
-// EXEC
-
-parseIt(binaryTransmission);
-
-// parseIt('001000100000000010000100011000111000110100')
-
-// TESTING AREA
-
-
-
+function calculateValue(operatorID: string, values: number[]): number {
+    
+    switch (operatorID) {
+        case '000': // sum packet
+            return values.reduce((a,b) => a+b)
+        case '001': // product packet
+            return values.reduce((a,b) => a*b)
+        case '010': // minimum packet 
+            let minSorted: number[] = [...values].sort((a,b) => a-b);
+            return minSorted[0];
+        case '011': // maximum packet
+            let maxSorted: number[] = [...values].sort((a,b) => b-a);
+            return maxSorted[0];
+        case '101': // greater than packet
+            return values[0] > values[1] ? 1 : 0;
+        case '110': // less than packet 
+            return values[0] < values[1] ? 1 : 0;
+        case '111': // equal packet
+            return values[0] === values[1] ? 1 : 0;
+        default:
+            console.log('NO VALID OPERATOR ID PASSED INTO calculateValue')
+    }
+    return 0;
+}
 
 function processLiteralValue(literalBody: string): number[] {
-    console.log(`\t\tprocessLiterValue receives: ${literalBody}`)
+    // console.log(`\t\tprocessLiterValue receives: ${literalBody}`)
     let literalValue: string = '';
 
     let length: number = 0; // change this ofc
@@ -154,4 +176,10 @@ function processLiteralValue(literalBody: string): number[] {
     return [parseInt(literalValue, 2), length];
 }
 
-console.log(versionCounter)
+
+// EXEC
+
+parseIt(binaryTransmission);
+
+// TESTING AREA
+
