@@ -22,17 +22,55 @@ let inputLinesArr = input.split('\n');
 // console.log(inputLinesArr) 
 // GLOBAL VARIABLES
 // PREPROCESSING / CREATING MAP ARRAY
+/*
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+                explision can happen with numbers with 2 digits!!!!! --> update performExplosion function needed!!!
+
+
+                
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+
+
 // END OF PREPROCESSING
+
+*/
+// UTILITY
+function isDigit(str) {
+    if (str != ',' && str != '[' && str != ']') {
+        return true;
+    }
+    return false;
+}
 // SOLUTION
 function performExplosion(line) {
     let bracketCounter = 0;
-    let previousNumberIdx = -1;
+    let previousNumberStartIdx = -1;
     let previousNumber = -1;
+    let previousNumberLength = 0;
+    let futureNumberStartIdx = -1;
     let futureNumber = -1;
-    let futureNumberIdx = -1;
+    let futureNumberLength = 0;
     let explosionStartIdx = -1;
     let firstNumber = -1;
+    let firstNumberLength = 0;
     let secondNumber = -1;
+    let secondNumberLength = 0;
     for (let i = 0; i < line.length; i++) {
         let char = line.charAt(i);
         if (char === '[') {
@@ -43,37 +81,82 @@ function performExplosion(line) {
         }
         else if (char != ',') {
             if (0 <= firstNumber) {
-                futureNumberIdx = i;
-                futureNumber = parseInt(line.charAt(i), 10);
+                futureNumberStartIdx = i;
+                let nextChar = line.charAt(i + 1);
+                if (isDigit(nextChar)) {
+                    let twoDigitNumber = char + nextChar;
+                    futureNumber = parseInt(twoDigitNumber, 10);
+                    futureNumberLength = 2;
+                    i++;
+                }
+                else {
+                    futureNumber = parseInt(char, 10);
+                    futureNumberLength = 1;
+                }
                 break;
             }
             else {
-                previousNumberIdx = i;
-                previousNumber = parseInt(line.charAt(i), 10);
+                previousNumberStartIdx = i;
+                let nextChar = line.charAt(i + 1);
+                if (isDigit(nextChar)) {
+                    let twoDigitNumber = char + nextChar;
+                    previousNumber = parseInt(twoDigitNumber, 10);
+                    previousNumberLength = 2;
+                    i++;
+                }
+                else {
+                    previousNumber = parseInt(char, 10);
+                    previousNumberLength = 1;
+                }
             }
         }
         if (bracketCounter === 5) {
             if (firstNumber === -1) {
                 explosionStartIdx = i;
-                firstNumber = parseInt(line.slice(i + 1, i + 2), 10);
-                secondNumber = parseInt(line.slice(i + 3, i + 4), 10);
-                i = i + 4;
+                let nextChar = line.charAt(i + 2);
+                if (isDigit(nextChar)) {
+                    let twoDigitNumber = line.charAt(i + 1) + nextChar;
+                    firstNumber = parseInt(twoDigitNumber, 10);
+                    firstNumberLength = 2;
+                    i = i + 3;
+                }
+                else {
+                    firstNumber = parseInt(line.charAt(i + 1));
+                    firstNumberLength = 1;
+                    i = i + 2;
+                }
+                nextChar = line.charAt(i + 2); // since i has just been updated by either 2 or 3
+                if (isDigit(nextChar)) {
+                    let twoDigitNumber = line.charAt(i + 1) + nextChar;
+                    secondNumber = parseInt(twoDigitNumber, 10);
+                    secondNumberLength = 2;
+                    i = i + 3;
+                }
+                else {
+                    secondNumber = parseInt(line.charAt(i + 1));
+                    secondNumberLength = 1;
+                    i = i + 2;
+                }
             }
         }
     }
-    // console.log(`pair: ${firstNumber}, ${secondNumber}, previousNrIdx: ${line.charAt(previousNumberIdx)}, futureIdx: ${line.charAt(futureNumberIdx)}`);
+    console.log(`firstNumber and length: ${firstNumber}, ${firstNumberLength}
+    secondNumber and length: ${secondNumber}, ${secondNumberLength}
+    previousNumber and length: ${previousNumber}, ${previousNumberLength}
+    futureNumber and length: ${futureNumber}, ${futureNumberLength}`);
+    // console.log(`pair: ${firstNumber}, ${secondNumber}, previousNrIdx: ${line.charAt(previousNumberStartIdx)}, futureIdx: ${line.charAt(futureNumberStartIdx)}`);
     let newLine = line;
-    if (firstNumber != -1) { // do the exploding
+    if (firstNumber != -1) { // do the exploding // you could check for many other things e.g. secondNumberLength or futureNumberLength etc.
         let newPreviousNumber = '';
         let newFutureNumber = '';
-        if (futureNumberIdx != -1) { // if a future number exists:
+        if (futureNumberStartIdx != -1) { // if a future number exists:
             newFutureNumber = JSON.stringify(secondNumber + futureNumber);
-            newLine = newLine.slice(0, futureNumberIdx) + newFutureNumber + newLine.slice(futureNumberIdx + 1, newLine.length);
+            newLine = newLine.slice(0, futureNumberStartIdx) + newFutureNumber + newLine.slice(futureNumberStartIdx + futureNumberLength, newLine.length);
         }
-        newLine = newLine.slice(0, explosionStartIdx) + '0' + newLine.slice(explosionStartIdx + 5, newLine.length);
-        if (previousNumberIdx != -1) { // if a previous number exists:
+        newLine = newLine.slice(0, explosionStartIdx) + '0' + newLine.slice(explosionStartIdx + 3 + previousNumberLength + futureNumberLength, newLine.length);
+        if (previousNumberStartIdx != -1) { // if a previous number exists:
             newPreviousNumber = JSON.stringify(firstNumber + previousNumber);
-            newLine = newLine.slice(0, previousNumberIdx) + newPreviousNumber + newLine.slice(previousNumberIdx + 1, newLine.length);
+            newLine = newLine.slice(0, previousNumberStartIdx) + newPreviousNumber + newLine.slice(previousNumberStartIdx + previousNumberLength, newLine.length);
         }
     }
     return newLine;
@@ -127,6 +210,16 @@ function performAddition() {
 // performAddition();
 // let afterOneExplosion: string = performExplosion(testLine4);
 // performExplosion(afterOneExplosion);
-console.log(giveReducedLine("[[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]],[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]]"));
+// "[[[[4,0],[5,0]],[[[4,5],[2,6]],[9,5]]],[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]]"
 // TESTING AREA
+// let temp = "[[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]],[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]]"
+let temp = '[[[[[9,8],1],2],3],4]';
+// for (let i=0; i<10; i++) {
+//     temp = giveReducedLine(temp);
+//     console.log(temp);
+// }
+console.log(performExplosion(temp));
+// let doubleDigitExplosions: string = '[[[[35,[10,10]]],7]]';
+//                                 //  '[[[[45,0]],17]]' 
+// console.log(performExplosion(doubleDigitExplosions));
 //# sourceMappingURL=solution-part-1.js.map
