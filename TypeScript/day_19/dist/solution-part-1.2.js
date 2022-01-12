@@ -106,6 +106,20 @@ function giveScannerVectorPacks(scanner) {
     }
     return thisScannersVectorPacks;
 }
+function giveVectorPacketsOrientations(vectorPack) {
+    let newArr = []; // cannot use new Array(24).fill([]) because the empty arrays that you pass in the master array are passed by reference!!
+    for (let i = 0; i < 24; i++) {
+        newArr.push([]);
+    }
+    vectorPack.forEach(element => {
+        let dims = giveAllOrientations(element);
+        dims.forEach((item, idx) => {
+            newArr[idx].push(item);
+        });
+    });
+    // console.log(newArr)
+    return newArr;
+}
 function giveAmountOfSameVectors(vectorPack1, vectorPack2) {
     // console.log(vectorPack1);
     // console.log(vectorPack2);
@@ -127,9 +141,8 @@ function compareTwoScannersVectorPacks(vecPacks1, vecPacks2) {
         }
     }
     console.log(highestAmount);
+    return highestAmount;
 }
-// function giveScannersAllRotationVectorPacks(scannerVectorPacks: number[][][]) {
-// }
 /*
 
 EXECUTION ====================================================================================      ========
@@ -140,30 +153,34 @@ EXECUTION ======================================================================
 
 */
 // TEEEEEEEEEEEEEEEEEST
-let testScannerPair = input.slice(0, 2);
+// let testScannerPair: number[][][] = input.slice(0, 2);
+let testScannerPair = [input[0], input[1]];
 let scanner1 = testScannerPair[0];
 let scanner2 = testScannerPair[1];
 let scanner1VectorPacks = giveScannerVectorPacks(scanner1);
 let scanner2VectorPacks = giveScannerVectorPacks(scanner2);
 // compareTwoScannersVectorPacks(scanner1VectorPacks, scanner2VectorPacks);
 // SUBTEST
-function test(vectorPack) {
-    let newArr = new Array(30).fill([]);
-    // console.log(newArr)
-    // vectorPack.forEach(element => {
-    let dims = giveAllOrientations(vectorPack[0]);
-    // console.log(dims)
-    console.log(dims);
-    dims.forEach((item, idx) => {
-        console.log(`idx: ${idx}:`);
-        console.log(`\t item ${item}`);
-        newArr[idx].push([111]);
-        // console.log(item, idx)
-    });
-    // })
-    console.log(newArr);
+function test(vecPacks1, vecPacks2) {
+    // for (let i = 0; i < vecPacks1.length; i++) {
+    // let currentFirstPack = vecPacks1[i];
+    for (let j = 0; j < vecPacks2.length; j++) {
+        let currentSecondPack = vecPacks2[j];
+        let currentSecondPackAllDimensions = giveVectorPacketsOrientations(currentSecondPack);
+        // for (let k = 0; k < currentSecondPackAllDimensions.length; k++) {
+        //     let currentSecondPackDimension = currentSecondPackAllDimensions[k];
+        let amount = compareTwoScannersVectorPacks(vecPacks1, currentSecondPackAllDimensions);
+        if (masterHighestAmount < amount) {
+            masterHighestAmount = amount;
+        }
+        // }
+    }
+    // }
 }
-test(scanner2VectorPacks[0]);
+let masterHighestAmount = 0;
+// console.log(scanner1VectorPacks)
+test(scanner1VectorPacks, scanner2VectorPacks);
+console.log(`the masterHighestAmount: ${masterHighestAmount}`);
 // let testScanner1: number[][] = [
 //     [10,100,1000],
 //     [0,0,0],

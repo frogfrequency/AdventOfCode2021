@@ -183,20 +183,18 @@ function giveAmountOfSameVectors(vectorPack1: number[][], vectorPack2: number[][
     return allVectors.length - uniqueVectors.size
 }
 
-function compareTwoScannersVectorPacks(vecPacks1: number[][][], vecPacks2: number[][][]) {
-
-    let highestAmount = 0;
+function includes12Matches(vecPacks1: number[][][], vecPack2Orientations: number[][][]): number[] {
 
     for (let i = 0; i < vecPacks1.length; i++) {
-        for (let j = 0; j < vecPacks2.length; j++) {
-            let amountOfSameVectors = giveAmountOfSameVectors(vecPacks1[i], vecPacks2[j]);
-            if (highestAmount < amountOfSameVectors) {
-                highestAmount = amountOfSameVectors;
+        for (let j = 0; j < vecPack2Orientations.length; j++) {
+            let amountOfSameVectors = giveAmountOfSameVectors(vecPacks1[i], vecPack2Orientations[j]);
+            if (10 < amountOfSameVectors) {
+                return [i, j] // index of vectorPack 1, orientation index of vectorPack2's vector
             }
+
         }
     }
-    console.log(highestAmount);
-    return highestAmount
+    return [-1, -1]
 }
 
 
@@ -217,7 +215,7 @@ EXECUTION ======================================================================
 // TEEEEEEEEEEEEEEEEEST
 
 // let testScannerPair: number[][][] = input.slice(0, 2);
-let testScannerPair: number[][][] = [input[0],input[1]]
+let testScannerPair: number[][][] = [input[0], input[1]]
 
 let scanner1: number[][] = testScannerPair[0];
 let scanner2: number[][] = testScannerPair[1];
@@ -227,42 +225,50 @@ let scanner2VectorPacks: number[][][] = giveScannerVectorPacks(scanner2);
 
 
 
-// compareTwoScannersVectorPacks(scanner1VectorPacks, scanner2VectorPacks);
 
 // SUBTEST
 
 
 
 
-function test(vecPacks1: number[][][], vecPacks2: number[][][]) {
+function giveSecondScannerPositionRelativeToScanner1(vecPacks1: number[][][], vecPacks2: number[][][]) {
 
-    // for (let i = 0; i < vecPacks1.length; i++) {
-        // let currentFirstPack = vecPacks1[i];
+    for (let j = 0; j < vecPacks2.length; j++) {
+        let currentSecondPack = vecPacks2[j];
+        let currentSecondPackAllDimensions = giveVectorPacketsOrientations(currentSecondPack);
 
-        for (let j = 0; j < vecPacks2.length; j++) {
-            let currentSecondPack = vecPacks2[j];
-            let currentSecondPackAllDimensions = giveVectorPacketsOrientations(currentSecondPack);
-
-            // for (let k = 0; k < currentSecondPackAllDimensions.length; k++) {
-            //     let currentSecondPackDimension = currentSecondPackAllDimensions[k];
-                let amount = compareTwoScannersVectorPacks(vecPacks1, currentSecondPackAllDimensions);
-                if (masterHighestAmount < amount) {
-                    masterHighestAmount = amount;
-                }
-            // }
+        let position: number[] = includes12Matches(vecPacks1, currentSecondPackAllDimensions);
+        if (position[0] != -1 && position[1] != -1) {
+            console.log(`vecPack1 idx ${position[0]} matches vecPack2 idx ${j} oriented with idx ${position[1]}`)
+            return [position[0], j, position[1]]
         }
-    // }
+    }
+    return [-1, -1, -1]
 }
 
-let masterHighestAmount = 0;
 
-test(scanner1VectorPacks, scanner2VectorPacks);
+console.log(giveSecondScannerPositionRelativeToScanner1(scanner1VectorPacks, scanner2VectorPacks));
+
+console.log(`-----------------------------------------------------------------------------\n---------------------------------------------`)
+
+function giveAllScannerVectorPackets(scanners: number[][][]): number[][][][] {
+    let emptyArr: number[][][][] = [];
+    scanners.forEach(scanner => {
+        emptyArr.push(giveScannerVectorPacks(scanner))
+    })
+    return emptyArr
+}
 
 
-console.log(`the masterHighestAmount: ${masterHighestAmount}`)
+
+let allScannerVectorPackets: number[][][][] = giveAllScannerVectorPackets(input);
 
 
-
+for (let i=0; i<allScannerVectorPackets.length; i++) {
+    for (let j=0; j<allScannerVectorPackets.length; j++) {
+        
+    }
+}
 
 
 
@@ -291,5 +297,3 @@ console.log(`the masterHighestAmount: ${masterHighestAmount}`)
 // let testScanner1VectorPacks: number[][][] = giveScannerVectorPacks(testScanner1);
 // let testScanner2VectorPacks: number[][][] = giveScannerVectorPacks(testScanner2);
 
-
-// compareTwoScannersVectorPacks(testScanner1VectorPacks, testScanner2VectorPacks);
