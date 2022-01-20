@@ -1,8 +1,11 @@
 // INPUT
+import { puzzleInput } from "./data/puzzle-input";
+import { testInput1 } from "./data/test-input";
 
-import { testInput1 } from "./data/puzzle-input";
 
-const inputRaw = testInput1; // change input here
+// console.log(puzzleInput)
+
+const inputRaw = puzzleInput; // change input here
 
 
 // GLOBAL VARIABLES
@@ -62,7 +65,6 @@ function giveParsedInput(input: string): number[][][] {
 const input = giveParsedInput(inputRaw);
 
 
-// console.log(testCoords)
 
 
 
@@ -71,7 +73,21 @@ const input = giveParsedInput(inputRaw);
 
 // UTILITY
 
+function removeDuplicateScanners(scanner: number[][]): number[][] {
+    let scannerStrings: string[] = [];
+    scanner.forEach(item => {
+        scannerStrings.push(JSON.stringify(item))
+    })
 
+    let theSet = new Set(scannerStrings);
+
+    let scannerStringsFiltered = Array.from(theSet)
+    let scannerFiltered: number[][] = [];
+    scannerStringsFiltered.forEach(item => {
+        scannerFiltered.push(JSON.parse(item))
+    })
+    return scannerFiltered
+}
 
 
 function giveAllOrientations(coords: number[]) { // --- return 6 * 4 = 24 distinct rotations
@@ -155,7 +171,6 @@ function giveScannerVectorPacks(scanner: number[][]): number[][][] {
 }
 
 function giveVectorPacketsOrientations(vectorPack: number[][]): number[][][] {
-
     let newArr: number[][][] = []; // cannot use new Array(24).fill([]) because the empty arrays that you pass in the master array are passed by reference!!
     for (let i = 0; i < 24; i++) {
         newArr.push([])
@@ -167,14 +182,10 @@ function giveVectorPacketsOrientations(vectorPack: number[][]): number[][][] {
             newArr[idx].push(item)
         })
     })
-    // console.log(newArr)
     return newArr
 }
 
 function giveAmountOfSameVectors(vectorPack1: number[][], vectorPack2: number[][]) {
-    // console.log(vectorPack1);
-    // console.log(vectorPack2);
-    // console.log('----------------')
 
     let pack1Strings = vectorPack1.map(element => JSON.stringify(element));
     let pack2Strings = vectorPack2.map(element => JSON.stringify(element));
@@ -215,13 +226,13 @@ EXECUTION ======================================================================
 // TEEEEEEEEEEEEEEEEEST
 
 // let testScannerPair: number[][][] = input.slice(0, 2);
-let testScannerPair: number[][][] = [input[0], input[1]]
+// let testScannerPair: number[][][] = [input[0], input[1]]
 
-let scanner1: number[][] = testScannerPair[0];
-let scanner2: number[][] = testScannerPair[1];
+// let scanner1: number[][] = testScannerPair[0];
+// let scanner2: number[][] = testScannerPair[1];
 
-let scanner1VectorPacks: number[][][] = giveScannerVectorPacks(scanner1);
-let scanner2VectorPacks: number[][][] = giveScannerVectorPacks(scanner2);
+// let scanner1VectorPacks: number[][][] = giveScannerVectorPacks(scanner1);
+// let scanner2VectorPacks: number[][][] = giveScannerVectorPacks(scanner2);
 
 
 
@@ -239,17 +250,13 @@ function giveSecondScannerPositionRelativeToScanner1(vecPacks1: number[][][], ve
 
         let position: number[] = includes12Matches(vecPacks1, currentSecondPackAllDimensions);
         if (position[0] != -1 && position[1] != -1) {
-            console.log(`vecPack1 idx ${position[0]} matches vecPack2 idx ${j} oriented with idx ${position[1]}`)
+            // console.log(`vecPack1 idx ${position[0]} matches vecPack2 idx ${j} oriented with idx ${position[1]}`)
             return [position[0], j, position[1]]
         }
     }
     return [-1, -1, -1]
 }
 
-
-console.log(giveSecondScannerPositionRelativeToScanner1(scanner1VectorPacks, scanner2VectorPacks));
-
-console.log(`-----------------------------------------------------------------------------\n---------------------------------------------`)
 
 function giveAllScannerVectorPackets(scanners: number[][][]): number[][][][] {
     let emptyArr: number[][][][] = [];
@@ -260,40 +267,178 @@ function giveAllScannerVectorPackets(scanners: number[][][]): number[][][][] {
 }
 
 
+function giveScannerRelations(allVectorPackets: number[][][][]): number[][] {
+
+    let positionsArr = []; // this stores all scanner positions relative to another scanner
+    // firstScannerIdx, secondScannerIdx, firstScannersBeaconIdx, secondScannersBeaconIdx, secondScannerOrientationIdx...
+
+    for (let i = 0; i < allVectorPackets.length; i++) {
+        for (let j = 0; j < allVectorPackets.length; j++) {
+            if (i != j) {
+                let x: number[] = giveSecondScannerPositionRelativeToScanner1(allVectorPackets[i], allVectorPackets[j]);
+                if (x[0] != -1 && x[1] != -1 && x[2] != -1) {
+                    positionsArr.push([i, j, x[0], x[1], x[2]])
+                }
+            }
+        }
+    }
+    return positionsArr
+}
+
 
 let allScannerVectorPackets: number[][][][] = giveAllScannerVectorPackets(input);
 
 
-for (let i=0; i<allScannerVectorPackets.length; i++) {
-    for (let j=0; j<allScannerVectorPackets.length; j++) {
-        
+let scannerRelations = giveScannerRelations(allScannerVectorPackets);
+
+
+// let scannerRelationsCheated = [ // firstScannerIdx, secondScannerIdx, firstScannersBeaconIdx, secondScannersBeaconIdx, secondScannerOrientationIdx...
+//     [0, 1, 9, 0, 1],
+//     [1, 0, 3, 0, 1],
+//     [1, 3, 14, 0, 0],
+//     [1, 4, 13, 1, 23],
+//     [2, 4, 16, 1, 19],
+//     [3, 1, 2, 6, 0],
+//     [4, 1, 4, 2, 9],
+//     [4, 2, 14, 0, 19]
+// ]
+
+
+function giveCleanRelations(relations: number[][]): number[][] {
+    let indexesOfDefinedScanners: number[] = [0];
+    let cleanRelations: number[][] = [];
+
+    while (indexesOfDefinedScanners.length < input.length) {
+
+        for (let i = 0; i < relations.length; i++) {
+            let currentRelation = relations[i];
+
+            if (indexesOfDefinedScanners.includes(currentRelation[0]) && !indexesOfDefinedScanners.includes(currentRelation[1])) {
+                cleanRelations.push(currentRelation)
+                indexesOfDefinedScanners.push(currentRelation[1])
+            }
+        }
     }
+    // console.log(cleanRelations)
+    return cleanRelations
+}
+
+// giveCleanRelations(scannerRelationsCheated);
+
+
+
+
+// rotate all the scanners so their arr positionen and aligned to scanner 1 (problem: scanners are not all related to scanner 1..)
+
+// use relationsPureCheated (so when the programm runs this doesnt have to be calculated every time..)
+
+
+let relationsPureCheated = giveCleanRelations(scannerRelations);
+
+
+interface relationsLUT {
+    [key: string]: number[]
+}
+
+
+function giveEmptyLookUpTable(relations: number[][]) {
+    let emptyOrientationLUT: relationsLUT = {};
+
+    for (let i = 1; i < relations.length; i++) {
+        emptyOrientationLUT[JSON.stringify(i)] = [];
+    }
+    return emptyOrientationLUT
+}
+
+
+function giveFilledLUT(relations: number[][]) {
+    let lut = giveEmptyLookUpTable(relations);
+    for (let i = 0; i < relations.length; i++) {
+        let currentRelation = relations[i];
+        lut[currentRelation[1]] = [currentRelation[0], currentRelation[4]]
+    }
+    return lut
+}
+
+
+function giveRotationInstructionsFromLUT(LUT: relationsLUT) {   // unused..
+    let LUTlength = Object.keys(LUT).length;
+    let rotationInstructions: number[][] = [];
+
+    for (let i = 1; i <= LUTlength; i++) {
+        let instructionsContainer: number[] = [];
+
+        let isRotatedLike: number = i;
+
+        while (isRotatedLike != 0) {
+            instructionsContainer.push(LUT[isRotatedLike][1])
+            isRotatedLike = LUT[isRotatedLike][0]
+        }
+        rotationInstructions.push(instructionsContainer)
+    }
+    return rotationInstructions
 }
 
 
 
+const filledLUT = giveFilledLUT(relationsPureCheated);
+
+// const rotationInstructions = giveRotationInstructionsFromLUT(filledLUT);
 
 
 
 
+// trying to merge the scanners from here on:
+
+// console.log(relationsPureCheated)
+
+let scannersCloned = JSON.parse(JSON.stringify(input));
 
 
+function addToScanner(firstScannerIdx: number, secondScannerIdx: number, firstBeaconIdx: number, secondBeaconIdx: number, scanner2Rotation: number) {
+    let firstScanner = scannersCloned[firstScannerIdx];
+    let secondScanner: number[][] = scannersCloned[secondScannerIdx];
+    // console.log(`\t\t\t addToScanner secondScanner: ${secondScanner}`)
+
+    // rotate second beacons
+    let allOrientations = giveVectorPacketsOrientations(secondScanner);
+    secondScanner = allOrientations[scanner2Rotation]
+
+    // find relation (offset) of the two scanners
+    let firstBeacon = firstScanner[firstBeaconIdx];
+    let secondBeacon = secondScanner[secondBeaconIdx];
+
+    let correctingVector = [firstBeacon[0] - secondBeacon[0], firstBeacon[1] - secondBeacon[1], firstBeacon[2] - secondBeacon[2]];
+
+    secondScanner.forEach((item, idx, arr) => {
+        arr[idx][0] += correctingVector[0];
+        arr[idx][1] += correctingVector[1];
+        arr[idx][2] += correctingVector[2];
+    })
+
+    // adjust second beacons
+
+    let scannersMergedUnfiltered = firstScanner.concat(secondScanner);
+
+    let scannerMergedFiltered = removeDuplicateScanners(scannersMergedUnfiltered);
+    return scannerMergedFiltered
+}
+
+function mergeAllScanners(relations: number[][]) {
+    for (let i=relations.length-1; 0<=i; i--) {
+        const firstScannerIdx: number = relations[i][0];
+        const secondScannerIdx: number = relations[i][1];
+        const firstBeaconIdx: number = relations[i][2];
+        const secondBeaconIdx: number = relations[i][3];
+        const scanner2Rotation: number = relations[i][4];
+        scannersCloned[firstScannerIdx] = addToScanner(firstScannerIdx, secondScannerIdx, firstBeaconIdx, secondBeaconIdx, scanner2Rotation);
+    }
+    console.log(scannersCloned[0].length)
+}
+
+mergeAllScanners(relationsPureCheated);
 
 
-// let testScanner1: number[][] = [
-//     [10,100,1000],
-//     [0,0,0],
-//     [30,300,3000],
-//     [3,3,3]
-// ]
+// console.log(relationsPureCheated);
 
-// let testScanner2: number[][] = [
-//     [30,120, 1020],
-//     [10,10,10],
-//     [432,432,423],
-//     [23,23,23]
-// ]
-
-// let testScanner1VectorPacks: number[][][] = giveScannerVectorPacks(testScanner1);
-// let testScanner2VectorPacks: number[][][] = giveScannerVectorPacks(testScanner2);
 
