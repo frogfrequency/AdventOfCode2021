@@ -171,6 +171,7 @@ function giveScannerVectorPacks(scanner: number[][]): number[][][] {
 }
 
 function giveVectorPacketsOrientations(vectorPack: number[][]): number[][][] {
+    // console.log(vectorPack.length)
     let newArr: number[][][] = []; // cannot use new Array(24).fill([]) because the empty arrays that you pass in the master array are passed by reference!!
     for (let i = 0; i < 24; i++) {
         newArr.push([])
@@ -330,10 +331,10 @@ function giveCleanRelations(relations: number[][]): number[][] {
 
 // rotate all the scanners so their arr positionen and aligned to scanner 1 (problem: scanners are not all related to scanner 1..)
 
-// use relationsPureCheated (so when the programm runs this doesnt have to be calculated every time..)
+// use relationsClean (so when the programm runs this doesnt have to be calculated every time..)
 
 
-let relationsPureCheated = giveCleanRelations(scannerRelations);
+let relationsClean = giveCleanRelations(scannerRelations);
 
 
 interface relationsLUT {
@@ -381,7 +382,7 @@ function giveRotationInstructionsFromLUT(LUT: relationsLUT) {   // unused..
 
 
 
-const filledLUT = giveFilledLUT(relationsPureCheated);
+const filledLUT = giveFilledLUT(relationsClean);
 
 // const rotationInstructions = giveRotationInstructionsFromLUT(filledLUT);
 
@@ -390,14 +391,20 @@ const filledLUT = giveFilledLUT(relationsPureCheated);
 
 // trying to merge the scanners from here on:
 
-// console.log(relationsPureCheated)
+// console.log(relationsClean)
 
-let scannersCloned = JSON.parse(JSON.stringify(input));
+let scannersCloned: number[][][] = JSON.parse(JSON.stringify(input));
+
+for (let i = 0; i < scannersCloned.length; i++) {
+    scannersCloned[i].push([100000, 100000, 100000])
+}
+
 
 
 function addToScanner(firstScannerIdx: number, secondScannerIdx: number, firstBeaconIdx: number, secondBeaconIdx: number, scanner2Rotation: number) {
     let firstScanner = scannersCloned[firstScannerIdx];
     let secondScanner: number[][] = scannersCloned[secondScannerIdx];
+    // console.log(secondScanner)
     // console.log(`\t\t\t addToScanner secondScanner: ${secondScanner}`)
 
     // rotate second beacons
@@ -425,7 +432,7 @@ function addToScanner(firstScannerIdx: number, secondScannerIdx: number, firstBe
 }
 
 function mergeAllScanners(relations: number[][]) {
-    for (let i=relations.length-1; 0<=i; i--) {
+    for (let i = relations.length - 1; 0 <= i; i--) {
         const firstScannerIdx: number = relations[i][0];
         const secondScannerIdx: number = relations[i][1];
         const firstBeaconIdx: number = relations[i][2];
@@ -433,19 +440,70 @@ function mergeAllScanners(relations: number[][]) {
         const scanner2Rotation: number = relations[i][4];
         scannersCloned[firstScannerIdx] = addToScanner(firstScannerIdx, secondScannerIdx, firstBeaconIdx, secondBeaconIdx, scanner2Rotation);
     }
-    
-    for (let i=0; i<scannersCloned[0].length; i++) {
-        console.log(scannersCloned[0][i]);
-    }
-    
 
-    console.log('-----------length:')
-    console.log(scannersCloned[0].length)
+    return scannersCloned[0]
 }
 
-mergeAllScanners(relationsPureCheated);
+let mergedBeaconsIncludingScanners: number[][] = mergeAllScanners(relationsClean);
+
+// console.log(mergedBeaconsIncludingScanners)
+
+function restoreValue(value: number): number {
+    if (90000 < value) {
+        return value - 100000
+    } else {
+        return value + 100000
+    }
+    return 0
+}
+
+function restoreScannerCoords(item: number[]): number[] {
+
+    item[0] = restoreValue(item[0]);
+    item[1] = restoreValue(item[1]);
+    item[2] = restoreValue(item[2]);
+
+    return item
+}
+
+function extractScanners(allCoords: number[][]) {
+    let scanners: number[][] = [];
+    allCoords.forEach(item => {
+        if (90000 < Math.abs(item[0])) {
+            scanners.push(item);
+        }
+    })
+    scanners.map(item => {
+        return restoreScannerCoords(item);
+    })
+    return scanners
+}
+
+let scannersRelativeToZero = extractScanners(mergedBeaconsIncludingScanners);
 
 
-// console.log(relationsPureCheated);
+function giveManhattanDistance(coord1: number[], coord2: number[]): number {
+    let output: number = 0;
+    output += Math.abs(coord1[0] - coord2[0])
+    output += Math.abs(coord1[1] - coord2[1])
+    output += Math.abs(coord1[2] - coord2[2])
+    return output
+}
 
+function tryAllCombinations(scanners: number[][]) {
+    let greatestManhattanDistance = 0;
+
+    for (let i = 0; i < scanners.length - 1; i++) {
+        for (let j = i + 1; j < scanners.length; j++) {
+            let manhattanDistance = giveManhattanDistance(scanners[i], scanners[j]);
+            if (greatestManhattanDistance < manhattanDistance) {
+                greatestManhattanDistance = manhattanDistance;
+            }
+        }
+    }
+    return greatestManhattanDistance
+}
+
+
+console.log(tryAllCombinations(scannersRelativeToZero));
 
