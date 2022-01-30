@@ -1,8 +1,8 @@
 "use strict";
 // INPUT
-let puzzeInput = [1, 10];
+let puzzleInput = [1, 10];
 let testInput = [4, 8];
-let input = testInput; // change input here
+let input = puzzleInput; // change input here
 // GLOBAL VARIABLES 
 const winningScore = 1000;
 let whoseTurn = 0; // 0 -> player 1, 1 --> player 2 
@@ -12,11 +12,10 @@ let deterministicDieRollCounter = 0; // should "nextDieRoll" be a thing or shoul
 function dieRoll() {
     let roll = (deterministicDieRollCounter % 100) + 1;
     deterministicDieRollCounter++;
-    console.log(roll);
     return roll;
 }
-function movePawn(startingPosition, dieRoll) {
-    let landingSpace = (startingPosition + dieRoll) % 10;
+function movePawn(startingPosition, sumOfThreeRolls) {
+    let landingSpace = (startingPosition + sumOfThreeRolls) % 10;
     if (landingSpace === 0) {
         return 10;
     }
@@ -25,16 +24,25 @@ function movePawn(startingPosition, dieRoll) {
     }
 }
 function playGame(winningScore) {
-    while (playerPositions[0] < 1000 && playerPositions[1] < 1000) {
+    while (playerScores[0] < 1000 && playerScores[1] < 1000) {
+        // console.log(playerScores);
+        let sumOfThreeRolls = 0;
         for (let i = 0; i < 3; i++) {
-            const currentRoll = dieRoll();
-            playerPositions[whoseTurn] = movePawn(playerPositions[whoseTurn], currentRoll);
-            playerScores[whoseTurn] += playerPositions[whoseTurn];
-            deterministicDieRollCounter++;
+            sumOfThreeRolls += dieRoll();
         }
+        playerPositions[whoseTurn] = movePawn(playerPositions[whoseTurn], sumOfThreeRolls);
+        playerScores[whoseTurn] += playerPositions[whoseTurn];
+        whoseTurn = (whoseTurn + 1) % 2;
     }
-    console.log(playerScores[0], playerScores[0]);
+    console.log(playerScores[0], playerScores[1], deterministicDieRollCounter);
+    if (playerScores[0] < playerScores[1]) {
+        console.log(`final puzzle solution: ${playerScores[0] * deterministicDieRollCounter}`);
+    }
+    else {
+        console.log(`final puzzle solution: ${playerScores[1] * deterministicDieRollCounter}`);
+    }
 }
 // EXECUTION
 playGame(1000);
+// TESTING
 //# sourceMappingURL=solution-part-1.js.map
