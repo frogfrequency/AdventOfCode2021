@@ -1,3 +1,10 @@
+// GLOBAL VARS
+
+let statusOfInfiniteTiles: boolean = false; // all the infinitive tiles around the image are represented by this tile
+
+// END OF GLOBAL VARS
+
+
 let testInput: string = `..#.#..#####.#.#.#.###.##.....###.##.#..###.####..#####..#....#..#..##..##
 #..######.###...####..#..#####..##..#.#####...##.#.#..#.##..#.#......#.###
 .######.###.####...#.##.##..#..#..#####.....#.#....###..#.##......#.....#.
@@ -56,12 +63,12 @@ function giveParsedInput(theInput: string) {
 const parsedInput: [boolean[], boolean[][]] = giveParsedInput(input);
 
 let IEA: boolean[] = parsedInput[0]; // IEA = image enhancement algorithm
+
+    // IEA[0] = true;
+
 let inputImage: boolean[][] = parsedInput[1];
-inputImage = addOuterShell(inputImage);
-inputImage = addOuterShell(inputImage);
-inputImage = addOuterShell(inputImage);
-inputImage = addOuterShell(inputImage);
-inputImage = addOuterShell(inputImage);
+inputImage = addOuterShell(inputImage, statusOfInfiniteTiles);
+
 
 
 
@@ -89,7 +96,9 @@ function logImage(image: boolean[][]) {
 
 function giveNextIteration(image: boolean[][]) {
 
-    image = addOuterShell(image);
+    image = addOuterShell(image, statusOfInfiniteTiles);
+    console.log('\tiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii');
+    logImage(image);
     let newImage: boolean[][] = [];
 
     for (let rowIdx = 1; rowIdx < image.length-1; rowIdx++) {
@@ -102,22 +111,26 @@ function giveNextIteration(image: boolean[][]) {
         newImage.push(newRow)
     }
 
-    newImage = addOuterShell(newImage);
+    if (IEA[0] === true && IEA[IEA.length-1] === false) {
+        statusOfInfiniteTiles = !statusOfInfiniteTiles; // HEREHERE
+    }
+
+    newImage = addOuterShell(newImage, statusOfInfiniteTiles);
 
     return newImage
 }
 
-function addOuterShell(image: boolean[][]) {
+function addOuterShell(image: boolean[][], infinityValue: boolean): boolean[][] {
     image.forEach((item, idx, arr) => {
-        arr[idx].push(false);
-        arr[idx].unshift(false);
+        arr[idx].push(infinityValue);
+        arr[idx].unshift(infinityValue);
     })
     image.push([]);
     image.unshift([]);
 
     for (let i = 0; i < image[1].length; i++) {
-        image[0].push(false);
-        image[image.length - 1].push(false);
+        image[0].push(infinityValue);
+        image[image.length - 1].push(infinityValue);
     }
     return image
 }
@@ -175,20 +188,29 @@ function giveAmountOfLitPixels2(image: boolean[][]) {
 function performIterations(amount: number, image: boolean[][]) {
     let currentImage = image;
 
-    console.log(`========= ITERATION 0 ===========`)
-    logImage(currentImage);
-    const amountOfLitPixels = giveAmountOfLitPixels2(currentImage);
-        console.log(`\t there are ${amountOfLitPixels} lit`)
+    // console.log(`========= ITERATION 0 ===========`)
+    // logImage(currentImage);
+    // const amountOfLitPixels = giveAmountOfLitPixels2(currentImage);
+    //     console.log(`\t there are ${amountOfLitPixels} lit`)
 
     for (let i=0; i<amount; i++) {
-        currentImage = giveNextIteration(currentImage);
         console.log(`========= ITERATION ${i} ===========`)
         logImage(currentImage);
-        const amountOfLitPixels = giveAmountOfLitPixels2(currentImage);
-        console.log(`\t there are ${amountOfLitPixels} lit`)
+        currentImage = giveNextIteration(currentImage);
+        console.log('\txxxxxxxxxxxxxxxxxxxxxxxxxx');
+        logImage(currentImage);
+
+
+        const amountOfLitPixels = giveAmountOfLitPixels(currentImage);
+        const amountOfLitPixels2 = giveAmountOfLitPixels2(currentImage);
+        console.log(`\t there are ${amountOfLitPixels} / ${amountOfLitPixels2} lit`)
     }
 }
 
+// for (let i=0; i<Array.length; i++) {
+
+// }
+
+performIterations(50, inputImage);
 
 
-performIterations(2, inputImage);

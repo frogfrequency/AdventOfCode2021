@@ -1,4 +1,5 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 let testInput = `..#.#..#####.#.#.#.###.##.....###.##.#..###.####..#####..#....#..#..##..##
 #..######.###...####..#..#####..##..#.#####...##.#.#..#.##..#.#......#.###
 .######.###.####...#.##.##..#..#..#####.....#.#....###..#.##......#.....#.
@@ -16,7 +17,7 @@ const input = testInput; // change input here
 // IEA = image enhancement algorithm
 function giveParsedInput(theInput) {
     let IEAString = theInput.split('\n\n')[0];
-    IEAString = IEAString.replace('\n', '');
+    IEAString = IEAString.replace(/\n/g, '');
     let IEA = [];
     for (let i = 0; i < IEAString.length; i++) {
         if (IEAString.charAt(i) === '.') {
@@ -64,6 +65,7 @@ function logImage(image) {
     }
 }
 // CODE
+let statusOfInfiniteTiles = false; // all the infinitive tiles around the image are represented by this tile 
 function giveNextIteration(image) {
     image = addOuterShell(image);
     let newImage = [];
@@ -76,6 +78,7 @@ function giveNextIteration(image) {
         }
         newImage.push(newRow);
     }
+    newImage = addOuterShell(newImage);
     return newImage;
 }
 function addOuterShell(image) {
@@ -118,9 +121,41 @@ function giveIEAIdx(the3x3Block) {
     });
     return parseInt(binaryString, 2);
 }
-logImage(inputImage);
-console.log('----');
-let firstIteration = giveNextIteration(inputImage);
-logImage(firstIteration);
-console.log(IEA[136]);
+function giveAmountOfLitPixels(image) {
+    let counter = 0;
+    image.forEach(item => {
+        let filtered = item.filter(value => value); // each row now contains only true --> so the length of the row cann be added to counter
+        counter += filtered.length;
+    });
+    return counter;
+}
+function giveAmountOfLitPixels2(image) {
+    let counter = 0;
+    for (let i = 0; i < image.length; i++) {
+        for (let j = 0; j < image[i].length; j++) {
+            if (image[i][j] === true) {
+                counter++;
+            }
+        }
+    }
+    return counter;
+}
+function performIterations(amount, image) {
+    let currentImage = image;
+    console.log(`========= ITERATION 0 ===========`);
+    logImage(currentImage);
+    const amountOfLitPixels = giveAmountOfLitPixels2(currentImage);
+    console.log(`\t there are ${amountOfLitPixels} lit`);
+    for (let i = 0; i < amount; i++) {
+        currentImage = giveNextIteration(currentImage);
+        console.log(`========= ITERATION ${i} ===========`);
+        logImage(currentImage);
+        const amountOfLitPixels = giveAmountOfLitPixels(currentImage);
+        const amountOfLitPixels2 = giveAmountOfLitPixels2(currentImage);
+        console.log(`\t there are ${amountOfLitPixels} / ${amountOfLitPixels2} lit`);
+    }
+}
+// for (let i=0; i<Array.length; i++) {
+// }
+performIterations(2, inputImage);
 //# sourceMappingURL=solution-part-1.js.map
